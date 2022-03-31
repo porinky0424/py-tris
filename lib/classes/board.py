@@ -25,7 +25,6 @@ class Board():
         self.backToBack = backToBack
         self.ren = ren
         self.minoBagContents = minoBagContents
-
     
     # mainBoardの任意の場所にブロックを足す
     def AddBlockToMainBoard (self, pos:Tuple[int]):
@@ -41,3 +40,9 @@ class Board():
                     break
             else:
                 self.topRowIdx[pos[0]] = BOARD_HEIGHT
+
+    def updateMinoBagContents(self):
+        # print("                                                                 ", self.currentMino.mino, self.minoBagContents)
+        self.minoBagContents.remove(self.currentMino.mino)
+        if len(self.minoBagContents) == 0:
+            self.minoBagContents = ReturnFullBag()

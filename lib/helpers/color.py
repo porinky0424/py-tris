@@ -1,5 +1,5 @@
 from lib.classes import *
-from lib.helpers.warning import Warn
+from lib.warning import Warn
 
 # 1マス分の与えられたRGBにしたがって、そのマスがなんのミノで埋められているか判別する
 def DetermineColor(r,g,b,pos,warn=False):

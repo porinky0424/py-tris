@@ -1,6 +1,7 @@
 from lib import *
 import minoMover
 import evaluator
+import time # debug
 
 DISPLAY_DELTA_TIME = 0.02
 
@@ -8,10 +9,18 @@ DISPLAY_DELTA_TIME = 0.02
 # 返り値としておいた後のboardを返す
 def PutMino (moveList:List[MoveInt], board:Board) -> Tuple[Board, bool, bool]:
 
+    global pcFirstHold
+
+    board.updateMinoBagContents()
     if moveList[0] is MOVE.HOLD:
+        if board.holdMino is MINO.NONE:
+            pcFirstHold = True
         PrintBoardWithDirectedMino(board, board.currentMino, True)
         moveList = moveList[1:]
         board = BoardAfterHold(board)
+        if pcFirstHold:
+            board.updateMinoBagContents() # first MOVE.HOLD
+            pcFirstHold = False
 
     # moveListに従って1つずつ動かしていく
     nextDirectedMino = board.currentMino
@@ -99,5 +108,14 @@ def GenerateMino () -> MinoInt:
             MINO.T,
             MINO.Z
         ], 7)
-    
-    return bags.pop()
+        # perfect clear test (the order matters)
+        # bags = [
+        #     MINO.Z,
+        #     MINO.L,
+        #     MINO.I,
+        #     MINO.O,
+        #     MINO.T,
+        #     MINO.S,
+        #     MINO.J,
+        # ]
+    return bags.pop(0)

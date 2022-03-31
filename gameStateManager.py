@@ -4,7 +4,7 @@
 #
 # -------------
 
-# windowをアクティブにする
+windowをアクティブにする
 try:
     import win32gui
     window = win32gui.FindWindow(None, "PuyoPuyoTetris")
@@ -25,6 +25,8 @@ import minoMover
 import simulator
 import evaluator
 import openTemplateMaker
+import perfectClear
+
 
 # 探索の深さの設定
 INIT_SEARCH_LIMIT = 4
@@ -59,7 +61,7 @@ def PytrisSimulator ():
     board = Board()
 
     board.followingMinos = [simulator.GenerateMino() for _ in range(FOLLOWING_MINOS_COUNT)]
-
+    board.minoBagContents = ReturnFullBag()
    
     print("\n\n\n")
     PrintBoard(board)
@@ -100,7 +102,9 @@ def PytrisSimulator ():
         assert len(board.followingMinos) == FOLLOWING_MINOS_COUNT
 
         # 思考ルーチン
-        multipath = openTemplateMaker.GetCustomTemplateMove(board)
+        multipath = perfectClear.PerfectClear(board)
+        if not multipath:
+            multipath = openTemplateMaker.GetCustomTemplateMove(board)
         if not multipath:
             multipath = decisionMaker.MultiDecide(board)
 
@@ -228,17 +232,21 @@ def PytrisMover ():
                     multiPath = decisionMaker.MultiDecide(board)
                 paths += multiPath
 
-            print("Making Decition in {}s".format(decideTimer.Stop()), flush=True)
+            print("Making Decision in {}s".format(decideTimer.Stop()), flush=True)
 
             # 移動
             # todo: 連続でおく途中でおきミスしたときや、盤面の状況が変化したときの対処（porinky0424がやります）
             mainBoard = board.mainBoard
             while paths:
+                mainBoard.updateMinoBagContents()
                 path = paths.pop(0)
                 currentMino = boardWatcher.GetMinoTypeOfCurrentMino()
 
                 # 最初に実行するのがHOLDの時は別に実行する
                 if path[0] is MOVE.HOLD:
+                    if mainBoard.holdMino is MINO.NONE:
+                        pcFirstHold = True
+
                     time.sleep(0.1) # 安定のためにHOLDの前後にsleepを入れる
                     Move(MOVE.HOLD)
                     time.sleep(0.1)
@@ -267,6 +275,9 @@ def PytrisMover ():
                 # おいた後の盤面を生成
                 joinedMainBoard = JoinDirectedMinoToBoardWithoutTopRowIdx(directedMino, mainBoard)
                 mainBoard, clearedRowCount = ClearLinesWithoutTopRowIdx(joinedMainBoard)
+                if pcFirstHold:
+                    mainBoard.updateMinoBagContents() # first MOVE.HOLD
+                    pcFirstHold = False
 
                 # 試合が終了して、次のゲームが始まっていないか気にしながら次の操作ができるような状態になるまで待機
                 isGameReady = False

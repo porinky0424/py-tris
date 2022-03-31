@@ -23,3 +23,25 @@ def CanPut(mainBoard:List[int], occupiedPositions:List[Tuple[int]]) -> bool:
         elif pos1 + 1 == BOARD_HEIGHT:
             return True
     return False
+
+# ボードが空になっているか（全ての行に関して）をチェックする
+def isBoardEmpty(mainBoard:List[int]) -> bool:
+    for row in mainBoard:
+        if row != 0:
+            return False
+    return True
+
+# ボードの上端がアラインされているかをチェックする
+alignedBoardTop = BOARD_HEIGHT # 上端のインデックス。全て空白の場合はボード外を指すことになる
+def isBoardTopAligned(mainBoard:List[int]) -> bool:
+    global alignedBoardTop
+    for i,row in enumerate(mainBoard):
+        if row != 0:
+            if row == 0b1111111111:
+                alignedBoardTop = i
+                return True
+            else:
+                return False
+    alignedBoardTop = BOARD_HEIGHT
+    return True
+
